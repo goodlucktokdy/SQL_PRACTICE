@@ -2,19 +2,16 @@ with base as (
 select
     distinct
     cart_id,
-    case when
-        name = 'Yogurt' then name else 0 end as Yogurt,
-    case when
-        name = 'Milk' then name else 0 end as Milk
+    max(case when name = 'Yogurt' then 1 else 0 end) as yogurt,
+    max(case when name = 'Milk' then 1 else 0 end) as milk
 from
     cart_products
+group by
+    cart_id
 )
 select
     cart_id
 from
     base
-group by
-    cart_id
-having
-    count(*) = 3
-
+where
+    yogurt + milk = 2
