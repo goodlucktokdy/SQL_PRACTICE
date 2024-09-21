@@ -1,19 +1,37 @@
-WITH REVIEW_COUNT AS 
-(SELECT MEMBER_ID, REVIEW_TEXT, REVIEW_DATE, 
- COUNT(REVIEW_ID) AS CNT
- FROM REST_REVIEW
-GROUP BY MEMBER_ID)
+with base as (
+select
+    a.member_id,
+    a.member_name,
+    b.review_id,
+    b.review_text,
+    b.review_date,
+    count(review_id) over (partition by member_id) as review_cnts
+from
+    member_profile a
+join
+    rest_review b
+on
+    a.member_id = b.member_id
+)
+select
+    member_name,
+    review_text,
+    date_format(review_date,'%Y-%m-%d') as review_date
+from
+    (
+select
+    member_name,
+    review_text,
+    review_cnts,
+    review_date,
+    rank() over (order by review_cnts desc) as ranks
+from
+    base
+) a
+where
+    ranks = 1
+order by
+    review_date, review_text
 
-SELECT M.MEMBER_NAME, R.REVIEW_TEXT, 
-DATE_FORMAT(R.REVIEW_DATE,'%Y-%m-%d') AS REVIEW_DATE
-FROM
-MEMBER_PROFILE AS M
-INNER JOIN
-REST_REVIEW AS R
-ON M.MEMBER_ID = R.MEMBER_ID
-INNER JOIN
-(SELECT MEMBER_ID FROM REVIEW_COUNT
-WHERE CNT = (SELECT MAX(CNT) FROM REVIEW_COUNT)) AS A
-ON A.MEMBER_ID = R.MEMBER_ID
-
-ORDER BY R.REVIEW_DATE ASC, R.REVIEW_TEXT ASC
+    
+    
