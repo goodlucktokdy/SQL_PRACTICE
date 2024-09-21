@@ -1,12 +1,30 @@
-SELECT A.REST_ID, A.REST_NAME,
-A.FOOD_TYPE, A.FAVORITES, A.ADDRESS, ROUND(AVG(B.REVIEW_SCORE),2) AS SCORE
-
-FROM REST_INFO AS A
-INNER JOIN
-REST_REVIEW AS B
-
-ON A.REST_ID = B.REST_ID
-
-WHERE SUBSTRING(A.ADDRESS,1,2) = '서울'
-GROUP BY A.REST_ID
-ORDER BY SCORE DESC, A.FAVORITES DESC
+with base as (
+select
+    b.rest_id,
+    b.rest_name,
+    b.food_type,
+    b.favorites,
+    b.address,
+    a.review_id,
+    a.review_score
+from
+    rest_review a
+left join
+    rest_info b
+on
+    a.rest_id = b.rest_id
+where
+    address like '%서울%시%'
+)
+select
+    distinct
+    rest_id,
+    rest_name,
+    food_type,
+    favorites,
+    address,
+    round(avg(review_score) over (partition by rest_id),2) as score
+from
+    base
+order by
+    score desc,favorites desc
