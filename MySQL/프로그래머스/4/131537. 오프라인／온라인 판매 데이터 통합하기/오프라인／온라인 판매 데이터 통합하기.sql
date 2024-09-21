@@ -1,8 +1,28 @@
-(SELECT DATE_FORMAT(SALES_DATE,"%Y-%m-%d") AS SALES_DATE, PRODUCT_ID, 
-USER_ID, SALES_AMOUNT FROM ONLINE_SALE
-WHERE SALES_DATE LIKE '%2022-03%')
-UNION ALL
-(SELECT DATE_FORMAT(SALES_DATE, '%Y-%m-%d') AS SALES_DATE, PRODUCT_ID, NULL AS USER_ID,
-SALES_AMOUNT FROM OFFLINE_SALE
-WHERE SALES_DATE LIKE '%2022-03%')
-ORDER BY 1,2,3
+WITH base AS (
+    SELECT
+        user_id,
+        product_id,
+        sales_amount,
+        sales_date
+    FROM
+        online_sale
+    UNION
+    SELECT
+        NULL AS user_id,
+        product_id,
+        sales_amount,
+        sales_date
+    FROM
+        offline_sale
+)
+SELECT
+    date_format(sales_date,'%Y-%m-%d') as sales_date,  
+    product_id,
+    user_id,
+    sales_amount
+FROM
+    base
+WHERE
+    sales_date BETWEEN '2022-03-01' AND '2022-03-31'
+ORDER BY
+    sales_date, product_id, user_id;
