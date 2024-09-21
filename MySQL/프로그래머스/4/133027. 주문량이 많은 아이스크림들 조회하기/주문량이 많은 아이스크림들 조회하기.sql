@@ -1,28 +1,28 @@
-with base as (
-select
-    flavor,
-    total_order
-from
-    first_half
-union all
-
-select
-    flavor,
-    total_order
-from
-    july
+WITH base AS (
+    SELECT
+        flavor,
+        total_order
+    FROM
+        first_half
+    UNION ALL
+    SELECT
+        flavor,
+        total_order
+    FROM
+        july
 )
-select
-    a.flavor
-from (
-    select
-       flavor,
-       sum(total_order) as tot_order
-    from
+SELECT
+    flavor
+FROM
+(
+    SELECT
+        flavor,
+        SUM(total_order) AS tot_order
+    FROM
         base
-    group by
+    GROUP BY
         flavor
-    order by
-        tot_order desc
-) a
-limit 3
+) as result
+ORDER BY
+    tot_order DESC
+LIMIT 3;
