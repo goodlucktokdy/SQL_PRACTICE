@@ -1,12 +1,20 @@
-WITH TAB AS (SELECT CART_ID, GROUP_CONCAT(DISTINCT NAME) AS NAME
-FROM CART_PRODUCTS
-GROUP BY CART_ID
-ORDER BY CART_ID)
+with base as (
+select
+    distinct
+    cart_id,
+    case when
+        name = 'Yogurt' then name else 0 end as Yogurt,
+    case when
+        name = 'Milk' then name else 0 end as Milk
+from
+    cart_products
+)
+select
+    cart_id
+from
+    base
+group by
+    cart_id
+having
+    count(*) = 3
 
-SELECT DISTINCT A.CART_ID
-FROM CART_PRODUCTS AS A
-INNER JOIN
-TAB AS N
-ON A.CART_ID = N.CART_ID
-WHERE N.NAME LIKE '%Milk%Yogurt%'
-ORDER BY A.CART_ID
