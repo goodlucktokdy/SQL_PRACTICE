@@ -1,10 +1,16 @@
-WITH CTE AS
-(SELECT PRODUCT_ID, SUM(AMOUNT) AS AMNT FROM FOOD_ORDER
-WHERE DATE_FORMAT(PRODUCE_DATE,'%Y-%m') = '2022-05'
-GROUP BY PRODUCT_ID)
-SELECT B.PRODUCT_ID, A.PRODUCT_NAME, A.PRICE * B.AMNT AS TOTAL_SALES
-FROM CTE AS B
-INNER JOIN
-FOOD_PRODUCT AS A
-ON A.PRODUCT_ID = B.PRODUCT_ID
-ORDER BY TOTAL_SALES DESC, B.PRODUCT_ID ASC
+select
+    a.product_id,
+    a.product_name,
+    sum(a.price * b.amount) as total_sales
+from
+    food_product a
+left join
+    food_order b
+on
+    a.product_id = b.product_id
+where
+    b.produce_date between '2022-05-01' and '2022-05-31'
+group by    
+    a.product_id
+order by
+    total_sales desc, product_id asc
