@@ -6,6 +6,7 @@ select
     a.daily_fee,
     b.start_date,
     b.end_date,
+    timestampdiff(day,b.start_date,b.end_date) + 1 as duration,
     c.duration_type,
     c.discount_rate
 from
@@ -19,20 +20,6 @@ left join
 on
     c.car_type = a.car_type
 ),
-regex_table as (
-select
-    history_id,
-    car_id,
-    car_type,
-    daily_fee,
-    start_date,
-    end_date,
-    timestampdiff(day,start_date,end_date) + 1 as duration,
-    duration_type,
-    discount_rate
-from
-    base
-),
 discount_table as (
 select
     distinct
@@ -45,7 +32,7 @@ select
     a.duration,
     b.discount_rate
 from
-    regex_table a
+    base a
 left join
     CAR_RENTAL_COMPANY_DISCOUNT_PLAN b
 on
