@@ -1,11 +1,36 @@
-SELECT A.AUTHOR_ID, B.AUTHOR_NAME, A.CATEGORY, SUM(C.SALES * A.PRICE) AS TOTAL_SALES
-FROM BOOK AS A
-INNER JOIN
-AUTHOR AS B
-ON A.AUTHOR_ID = B.AUTHOR_ID
-INNER JOIN
-BOOK_SALES AS C
-ON A.BOOK_ID = C.BOOK_ID
-WHERE SALES_DATE BETWEEN '2022-01-01' AND '2022-01-31'
-GROUP BY A.CATEGORY, A.AUTHOR_ID
-ORDER BY A.AUTHOR_ID ASC, A.CATEGORY DESC
+with base as (
+select
+    distinct
+    a.author_id,
+    a.book_id,
+    b.sales_date,
+    c.author_name,
+    a.category,
+    b.sales,
+    a.price
+from
+    book a
+left join
+    book_sales b
+on
+    a.book_id = b.book_id
+left join
+    author c
+on
+    a.author_id = c.author_id
+)
+select
+    author_id,
+    author_name,
+    category,
+    sum(sales * price) as total_sales
+from
+    base
+where
+    sales_date between '2022-01-01' and '2022-01-31'
+group by
+    category, author_id
+order by
+    author_id asc, category desc
+
+    
