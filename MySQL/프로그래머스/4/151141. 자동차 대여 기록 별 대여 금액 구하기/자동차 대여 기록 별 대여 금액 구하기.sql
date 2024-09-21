@@ -1,18 +1,71 @@
-SELECT HISTORY_ID, ROUND(DAILY_FEE * 0.01 * (100-CASE WHEN
-                                           DISCOUNT_RATE IS NULL THEN 0
-                                          ELSE DISCOUNT_RATE END) * (DATEDIFF(END_DATE,START_DATE) + 1)) AS FEE
-FROM CAR_RENTAL_COMPANY_CAR AS A
-INNER JOIN
-CAR_RENTAL_COMPANY_RENTAL_HISTORY AS B
-ON A.CAR_ID = B.CAR_ID
-LEFT JOIN
-CAR_RENTAL_COMPANY_DISCOUNT_PLAN AS C
-ON C.CAR_TYPE = A.CAR_TYPE AND
-CASE WHEN DATEDIFF(B.END_DATE,B.START_DATE) + 1 >= 90
-THEN '90일 이상'
-WHEN DATEDIFF(B.END_DATE,B.START_DATE) + 1 >= 30
-THEN '30일 이상'
-WHEN DATEDIFF(B.END_DATE,B.START_DATE) + 1 >=7
-THEN '7일 이상'END = C.DURATION_TYPE
-WHERE A.CAR_TYPE = '트럭'
-ORDER BY FEE DESC, B.HISTORY_ID DESC
+with base as (
+select 
+    b.history_id,
+    a.car_id,
+    a.car_type,
+    a.daily_fee,
+    b.start_date,
+    b.end_date,
+    c.duration_type,
+    c.discount_rate
+from
+    CAR_RENTAL_COMPANY_CAR a
+join
+    CAR_RENTAL_COMPANY_RENTAL_HISTORY b
+on
+    a.car_id = b.car_id
+left join
+    CAR_RENTAL_COMPANY_DISCOUNT_PLAN c
+on
+    c.car_type = a.car_type
+),
+regex_table as (
+select
+    history_id,
+    car_id,
+    car_type,
+    daily_fee,
+    start_date,
+    end_date,
+    timestampdiff(day,start_date,end_date) + 1 as duration,
+    duration_type,
+    discount_rate
+from
+    base
+),
+discount_table as (
+select
+    distinct
+    a.history_id,
+    a.car_id,
+    a.car_type,
+    a.daily_fee,
+    a.start_date,
+    a.end_date,
+    a.duration,
+    b.discount_rate
+from
+    regex_table a
+left join
+    CAR_RENTAL_COMPANY_DISCOUNT_PLAN b
+on
+    a.car_type = b.car_type and(
+        b.duration_type =  case when
+        a.duration >= 90 then '90일 이상'
+        when
+        a.duration >= 30 then '30일 이상'
+        when
+        a.duration >= 7 then '7일 이상'
+        else null end))
+select
+    history_id,
+    case 
+        when
+        discount_rate is null then daily_fee * duration
+        else round(duration * (100-discount_rate) * 0.01 * daily_fee) end as fee
+from
+    discount_table
+where
+    car_type = '트럭'
+order by 
+    fee desc, history_id desc
