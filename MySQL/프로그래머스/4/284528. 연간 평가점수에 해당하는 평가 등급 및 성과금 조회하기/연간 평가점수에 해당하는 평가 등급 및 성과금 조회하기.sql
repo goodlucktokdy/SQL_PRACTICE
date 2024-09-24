@@ -1,41 +1,41 @@
 with base as (
-    select 
+    select
         a.emp_no,
         a.emp_name,
-        a.dept_id,
-        b.score,
-        b.year,
-        a.sal
+        a.sal,
+        b.score
     from
         hr_employees a
-    join
-        (select emp_no,
-                year,
-                avg(score) as score 
-         from 
-                hr_grade
-         group by
-            emp_no,year) b
-    on  
-        a.emp_no = b.emp_no
-    join
-        hr_department c
+    join   
+        hr_grade b
     on
-        a.dept_id = c.dept_id
+        a.emp_no = b.emp_no
 )
 select
     distinct
-    emp_no, 
+    emp_no,
     emp_name,
     case when
-      score >= 96 then 'S'
-      when score >= 90 then 'A'
-      when score >= 80 then 'B'
-      else 'C' end as grade,
+            avg(score) over (partition by emp_no) >= 96 then 'S' 
+        when
+            avg(score) over (partition by emp_no) >= 90 then 'A'
+        when
+            avg(score) over (partition by emp_no) >= 80 then 'B'
+        else
+            'C' end as grade,
     case when
-        score >= 96 then 0.2 * sal 
-        when score >= 90 then 0.15 * sal
-        when score >= 80 then 0.1 * sal 
-        else sal * 0 end as bonus
+            avg(score) over (partition by emp_no) >= 96 then sal * 0.2 
+        when
+            avg(score) over (partition by emp_no) >= 90 then sal * 0.15
+        when
+            avg(score) over (partition by emp_no) >= 80 then sal * 0.1
+        else
+            sal * 0 end as bonus
 from
     base
+order by 
+    emp_no
+    
+    
+    
+    
