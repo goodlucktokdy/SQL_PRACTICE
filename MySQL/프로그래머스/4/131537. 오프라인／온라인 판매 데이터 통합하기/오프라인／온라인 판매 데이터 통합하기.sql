@@ -1,28 +1,30 @@
-WITH base AS (
-    SELECT
+with base as (
+    select
+        date_format(sales_date,'%Y-%m-%d') as sales_date,
         user_id,
         product_id,
-        sales_amount,
-        sales_date
-    FROM
+        sales_amount
+    from
         online_sale
-    UNION
-    SELECT
-        NULL AS user_id,
+    union all
+    select
+         date_format(sales_date,'%Y-%m-%d') as sales_date,
+        (select null) as user_id,
         product_id,
-        sales_amount,
-        sales_date
-    FROM
+        sales_amount
+    from
         offline_sale
 )
-SELECT
-    date_format(sales_date,'%Y-%m-%d') as sales_date,  
+select
+    sales_date,
     product_id,
     user_id,
     sales_amount
-FROM
+from
     base
-WHERE
-    sales_date BETWEEN '2022-03-01' AND '2022-03-31'
-ORDER BY
-    sales_date, product_id, user_id;
+where
+    sales_date between '2022-03-01' and '2022-03-31'
+order by
+    sales_date asc, product_id asc, user_id asc
+    
+    
