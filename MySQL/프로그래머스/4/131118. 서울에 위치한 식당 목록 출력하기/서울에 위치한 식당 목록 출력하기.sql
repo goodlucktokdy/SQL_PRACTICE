@@ -1,30 +1,19 @@
-with base as (
 select
-    b.rest_id,
-    b.rest_name,
-    b.food_type,
-    b.favorites,
-    b.address,
-    a.review_id,
-    a.review_score
+    a.rest_id,
+    a.rest_name,
+    a.food_type,
+    a.favorites,
+    a.address,
+    round(avg(b.review_score),2) as score
 from
-    rest_review a
-left join
-    rest_info b
+    rest_info a
+join
+    rest_review b
 on
     a.rest_id = b.rest_id
 where
-    address like '%서울%시%'
-)
-select
-    distinct
-    rest_id,
-    rest_name,
-    food_type,
-    favorites,
-    address,
-    round(avg(review_score) over (partition by rest_id),2) as score
-from
-    base
+    address like '서울%시%'
+group by
+    a.rest_id
 order by
-    score desc,favorites desc
+    score desc, favorites desc
