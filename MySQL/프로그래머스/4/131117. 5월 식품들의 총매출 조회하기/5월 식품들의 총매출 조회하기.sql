@@ -1,16 +1,17 @@
 select
     a.product_id,
-    a.product_name,
-    sum(a.price * b.amount) as total_sales
+    b.product_name,
+    sum(a.amount*b.price) as total_sales
 from
-    food_product a
+    food_order a
 left join
-    food_order b
+    food_product b
 on
     a.product_id = b.product_id
 where
-    b.produce_date between '2022-05-01' and '2022-05-31'
-group by    
-    a.product_id
+    date(a.produce_date) between '2022-05-01' and '2022-05-31'
+    and b.price is not null
+group by
+    b.product_id,b.product_name
 order by
     total_sales desc, product_id asc
