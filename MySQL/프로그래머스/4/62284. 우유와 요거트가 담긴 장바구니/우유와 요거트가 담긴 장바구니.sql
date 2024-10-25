@@ -1,20 +1,22 @@
+-- 코드를 입력하세요
 with base as (
-    select
-        id, cart_id,
+    SELECT
+        distinct
+        cart_id,
         name,
-        max(case when
-                name = 'Milk' then 1 else 0 end) as Milk,
-        max(case when
-                name = 'Yogurt' then 1 else 0 end) as yogurt
-    from
+        case when 
+            name in ('Milk','Yogurt') then 1 else 0 end as temp
+    from 
         cart_products
-    group by
-        cart_id
-    having
-        milk + yogurt = 2
 )
-select
+select 
     cart_id
-from
+from 
     base
-order by cart_id asc
+group by 
+    cart_id
+having
+    sum(temp) = 2
+order by 
+    cart_id
+
