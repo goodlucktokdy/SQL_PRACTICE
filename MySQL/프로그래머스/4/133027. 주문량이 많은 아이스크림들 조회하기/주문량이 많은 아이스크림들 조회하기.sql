@@ -16,7 +16,7 @@ with base as (
 select
     flavor
 from 
-    base
+    base 
 group by 
     flavor
 order by 
