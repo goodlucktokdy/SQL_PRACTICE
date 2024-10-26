@@ -4,40 +4,34 @@ with base as (
         a.car_type,
         a.daily_fee,
         b.history_id,
-        b.start_date,
-        b.end_date,
-        timestampdiff(day,b.start_date,b.end_date) + 1 as duration
+        timestampdiff(day,b.start_date,b.end_date) + 1 as time_diff,
+        c.discount_rate,
+        c.duration_type
     from
-        car_rental_company_car a
+        CAR_RENTAL_COMPANY_CAR a
     join
-        car_rental_company_rental_history b
+        CAR_RENTAL_COMPANY_RENTAL_HISTORY b
     on 
         a.car_id = b.car_id
-    where a.car_type = '트럭'
-), duration_table as (  
-    select
-        a.car_type,
-        a.history_id,
-        a.daily_fee,
-        a.duration,
-        case when 
-            b.discount_rate is null then 0 else b.discount_rate end as discount_rate
-    from
-        base a
     left join
-         CAR_RENTAL_COMPANY_DISCOUNT_PLAN b
+        CAR_RENTAL_COMPANY_DISCOUNT_PLAN c
     on
-        a.car_type = b.car_type and
-        (b.duration_type = case when 
-            a.duration >= 90 then '90일 이상'
-            when a.duration >= 30 then '30일 이상'
-            when a.duration >= 7 then '7일 이상'
-            else null end)
+       c.duration_type = 
+        case when a.car_type = c.car_type and timestampdiff(day,b.start_date,b.end_date) + 1 >= 90 then '90일 이상'
+        when  a.car_type = c.car_type and timestampdiff(day,b.start_date,b.end_date) + 1 >= 30 then '30일 이상'
+        when  a.car_type = c.car_type and timestampdiff(day,b.start_date,b.end_date) + 1 >= 7 then '7일 이상'
+        else '7일 미만' end
 )
 select
     history_id,
-    round(duration * (1- 0.01* discount_rate) * daily_fee) as fee
-from
-    duration_table
-order by
+    case when 
+        discount_rate is not null then
+            round((1 - 0.01 * discount_rate) * daily_fee * time_diff)
+        else
+            round(daily_fee * time_diff) end as fee
+from 
+    base
+where
+    car_type = '트럭'
+order by 
     fee desc, history_id desc
