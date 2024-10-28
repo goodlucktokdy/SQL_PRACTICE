@@ -35,9 +35,11 @@ with recursive cte as (
     and a.id = b.parent_id
 )
 select
-    count(case when b_id is null then 1 else null end) as count,
+    count(a_id) as count,
     a_gen as generation
 from 
     joined_tb
+where
+    b_id is null
 group by 
     generation
