@@ -1,25 +1,36 @@
 with base as (
     select
-        a.member_name,
+        distinct
+        b.member_name,
         a.member_id,
-        count(b.review_id) over (partition by a.member_id) as cnts,   
-        b.review_text,
-        date_format(b.review_date,'%Y-%m-%d') as review_date
+        a.rest_id,
+        a.review_text,
+        date_format(a.review_date,'%Y-%m-%d') as review_date
     from 
-        member_profile a
-    join
-        rest_review b
+        rest_review a
+    left join 
+        member_profile b
     on 
         a.member_id = b.member_id
+)
+, review_cnt_tb as (
+    select
+        member_name,
+        review_text,
+        review_date,
+        count(member_id) over (partition by member_id) as cnt
+    from 
+        base
+    group by 
+        1,2,3
 )
 select
     member_name,
     review_text,
     review_date
 from 
-    base
+    review_cnt_tb
 where
-    cnts = (select max(cnts) from base)
+    cnt = (select max(cnt) from review_cnt_tb)
 order by 
-    review_date asc,
-    review_text asc
+    review_date, review_text 
