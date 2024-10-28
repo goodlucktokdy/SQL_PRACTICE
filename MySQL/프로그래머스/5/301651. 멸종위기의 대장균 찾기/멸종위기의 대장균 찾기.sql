@@ -1,34 +1,43 @@
 with recursive cte as (
     select
         1 as gen,
-        parent_id,
-        id
+        id,
+        parent_id
     from 
         ecoli_data
     where
         parent_id is null
     union all
     select
-        b.gen + 1,
-        a.parent_id,
-        a.id
+        cte.gen + 1,
+        a.id,
+        a.parent_id
     from 
-        ecoli_data a
-
+        ecoli_data a 
     join
+        cte
+    on 
+      a.parent_id = cte.id
+), joined_tb as (
+    select
+        a.gen as a_gen,
+        b.gen as b_gen,
+        a.id as a_id,
+        a.parent_id as a_parent_id,
+        b.id as b_id,
+        b.parent_id as b_parent_id
+    from 
+        cte a
+    left join 
         cte b
-    on
-        a.parent_id = b.id)
+    on 
+        a.gen + 1 = b.gen
+    and a.id = b.parent_id
+)
 select
-    count(distinct a.id) as count,
-    a.gen as generation
-from
-    cte a
-left join
-    cte b
-on
-    a.gen + 1 = b.gen and a.id = b.parent_id
-where
-    b.parent_id is null
+    count(case when b_id is null then 1 else null end) as count,
+    a_gen as generation
+from 
+    joined_tb
 group by 
     generation
