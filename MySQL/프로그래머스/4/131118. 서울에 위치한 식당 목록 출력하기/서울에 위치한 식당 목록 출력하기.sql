@@ -6,17 +6,16 @@ select
     a.address,
     round(avg(b.review_score),2) as score
 from 
-    rest_info a
-left join
+    rest_info a 
+left join 
     rest_review b
 on 
     a.rest_id = b.rest_id
 where
-    substring(address,1,5) like '%서울%'
-and 
-    b.review_score is not null
+    substring(a.address,1,5) like '%서울%'
 group by 
     1,2,3,4,5
+having 
+    score is not null
 order by 
-    score desc, favorites desc
-
+    score desc
