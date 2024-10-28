@@ -1,21 +1,21 @@
 with base as (
     select
         category,
-        dense_rank() over (partition by category order by price desc) as price_rank,
+        rank() over (partition by category order by price desc) as ranking,
         price,
         product_name
     from 
         food_product
     where
         category in ('과자','국','김치','식용유')
-)
-select
+ )
+select 
     category,
-    price as MAX_PRICE,
+    price as max_price,
     product_name
 from 
     base 
 where
-    price_rank = 1
+    ranking = 1
 order by 
     max_price desc
