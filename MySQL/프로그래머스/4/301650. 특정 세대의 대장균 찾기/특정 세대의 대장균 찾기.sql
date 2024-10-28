@@ -1,5 +1,5 @@
 with recursive cte as (
-    select 
+    select
         1 as gen,
         id,
         parent_id
@@ -7,23 +7,24 @@ with recursive cte as (
         ecoli_data
     where
         parent_id is null
-    union
+    union all
     select
-        a.gen + 1,
-        b.id,
-        b.parent_id
+        cte.gen + 1,
+        a.id,
+        a.parent_id
     from 
-        ecoli_data b
-    join 
-        cte a
-    on 
-        b.parent_id = a.id
-)
+        ecoli_data a
+    join
+        cte
+    on
+        a.parent_id = cte.id
+        
+    )
 select
-    id
+    distinct id
 from 
     cte
 where
     gen = 3
 order by 
-    id 
+    id
