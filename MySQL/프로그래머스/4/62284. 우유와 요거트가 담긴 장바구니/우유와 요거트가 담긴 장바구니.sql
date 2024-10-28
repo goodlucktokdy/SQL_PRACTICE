@@ -1,23 +1,24 @@
 with base as (
     select
-        a.cart_id,
-        sum(case when a.name in ('Yogurt','Milk') then 1 else 0 end) over (partition by a.cart_id) as cnts,
-        a.name
-    from (
-        select
-            distinct
-            cart_id,
-            name
-        from 
-            cart_products
-    ) a   
+        distinct
+        cart_id,
+        name
+    from 
+        cart_products
 )
 select
-    distinct
-    cart_id
-from 
-    base 
-where
-    cnts = 2
+    a.cart_id
+from (
+    select 
+        cart_id,
+        sum(case when 
+            name in ('Yogurt','Milk') then 1 else 0 end) as tmp
+    from 
+        base
+    group by 
+        1
+    having
+        tmp = 2
+) a
 order by 
     cart_id
