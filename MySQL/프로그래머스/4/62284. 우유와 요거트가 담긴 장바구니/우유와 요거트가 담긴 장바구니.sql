@@ -5,20 +5,21 @@ with base as (
         name
     from 
         cart_products
+    where
+        name in ('Milk','Yogurt')
 )
 select
     a.cart_id
 from (
-    select 
+    select
         cart_id,
-        sum(case when 
-            name in ('Yogurt','Milk') then 1 else 0 end) as tmp
+        count(name) as cnts
     from 
         base
     group by 
-        1
+        cart_id
     having
-        tmp = 2
+        count(name) = 2
 ) a
 order by 
-    cart_id
+    a.cart_id
