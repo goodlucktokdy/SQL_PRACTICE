@@ -1,33 +1,33 @@
--- 코드를 입력하세요
 with base as (
-    SELECT
+    select 
         distinct
-        b.member_id,
-        b.member_name,
         a.review_id,
+        a.member_id,
+        a.review_date,
         a.review_text,
-        date(a.review_date) as review_date
+        b.member_name
     from 
-        rest_review a
-    join 
+        rest_review a 
+    left join 
         member_profile b
     on 
         a.member_id = b.member_id
 )
-,review_cnt_ranks_per_user as (
+, review_cnts_ranks as (
     select
         a.member_name,
         a.review_text,
         a.review_date,
-        dense_rank() over (order by a.review_cnt_per_user desc) as ranks
+        dense_rank() over (order by a.review_cnt desc) as ranks
     from (
-        select
+        select 
+            member_id,
             member_name,
             review_text,
             review_date,
-            count(review_id) over (partition by member_id) as review_cnt_per_user
+            count(review_id) over (partition by member_id) as review_cnt
         from 
-            base
+            base 
     ) a
 )
 select 
@@ -36,8 +36,8 @@ select
     review_text,
     date_format(review_date,'%Y-%m-%d') as review_date
 from 
-    review_cnt_ranks_per_user
+    review_cnts_ranks
 where
     ranks = 1
 order by 
-    review_date, review_text
+    review_date asc, review_text asc
