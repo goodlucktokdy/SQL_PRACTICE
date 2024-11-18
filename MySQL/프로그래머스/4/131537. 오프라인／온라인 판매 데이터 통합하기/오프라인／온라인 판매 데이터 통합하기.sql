@@ -1,30 +1,29 @@
 with base as (
-    select
-        sales_date,
-        product_id,
+    select 
         user_id,
-        sales_amount
+        product_id,
+        sales_amount,
+        sales_date
     from 
         online_sale
-    union all
-    select
-        sales_date,
-        product_id,
+    union all 
+    select 
         null as user_id,
-        sales_amount
+        product_id,
+        sales_amount,
+        sales_date
     from 
         offline_sale
 )
-select
+select 
     date_format(sales_date,'%Y-%m-%d') as sales_date,
     product_id,
     user_id,
-    sum(sales_amount) as sales_amount
+    sales_amount
 from 
     base
-where
+where 
     sales_date between '2022-03-01' and '2022-03-31'
-group by 
-    sales_date, product_id, user_id
 order by 
-    sales_date, product_id, user_id
+    sales_date asc, product_id asc, user_id asc
+    
