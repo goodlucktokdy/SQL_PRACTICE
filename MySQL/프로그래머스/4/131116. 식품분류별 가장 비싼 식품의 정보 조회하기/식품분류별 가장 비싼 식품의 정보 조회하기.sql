@@ -1,25 +1,23 @@
 with base as (
-select
-    category,
-    max(price) as max_price
-from 
-    food_product
-where
-    category in ('과자','국','김치','식용유')    
-group by 
-    category
+    select 
+        distinct
+        category,
+        product_name,
+        price,
+        dense_rank() over (partition by category order by price desc) as cat_price_rank
+    from 
+        food_product
+    where
+        category in ('과자','국','김치','식용유')
 )
 select 
-    a.category,
-    a.max_price,
-    b.product_name
+    category,
+    price as max_price,
+    product_name
 from 
-    base a 
-join 
-    food_product b
-on
-    a.category = b.category
+    base 
 where
-    b.price = a.max_price
+    cat_price_rank = 1
 order by 
-    a.max_price desc
+    price desc
+    
