@@ -11,15 +11,15 @@ with base as (
 )
 select 
     distinct
-    a.user_id as USER_ID,
-    replace(a.nickname,',','') as NICKNAME,
-    concat(a.city,' ',replace(a.street_address1,'경기도 성남시 분당구 성남대로171','분당구 성남대로 171'),' ',a.street_address2) as "전체주소",
-    concat(left(a.tlno,3),'-',substring(a.tlno,4,4),'-',right(a.tlno,4)) as "전화번호"
+    b.user_id as USER_ID,
+    b.nickname as NICKNAME,
+    concat(b.city,' ',b.street_address1,' ',b.street_address2) as "전체주소",
+    concat(left(b.tlno,3),'-',substring(b.tlno,4,4),'-',right(b.tlno,4)) as "전화번호"
 from 
-    used_goods_user a 
-inner join 
-    base b
+    base a 
+left join 
+    used_goods_user b
 on 
-    b.writer_id = a.user_id
+    a.writer_id = b.user_id
 order by 
-    a.user_id desc
+    b.user_id desc
