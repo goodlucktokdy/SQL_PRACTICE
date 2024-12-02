@@ -1,4 +1,18 @@
-select 
+with base as (
+    select
+        apnt_no,
+        apnt_ymd,
+        pt_no,
+        mcdp_cd,
+        mddr_id,
+        apnt_cncl_yn,
+        apnt_cncl_ymd
+    from 
+        appointment
+    where
+        apnt_cncl_yn = 'N' and date(apnt_ymd) = '2022-04-13' and mcdp_cd = 'CS'
+)
+select
     a.apnt_no,
     b.pt_name,
     a.pt_no,
@@ -6,16 +20,14 @@ select
     c.dr_name,
     a.apnt_ymd
 from 
-    appointment a 
-left join 
-    patient b 
+    base a
+left join
+    patient b
 on 
     a.pt_no = b.pt_no
-left join 
+left join
     doctor c
 on 
     a.mddr_id = c.dr_id
-where 
-    a.apnt_cncl_yn = 'N' and a.mcdp_cd = 'CS' and date(a.apnt_ymd) = '2022-04-13'
 order by 
-    apnt_ymd asc
+    a.apnt_ymd asc
