@@ -1,23 +1,23 @@
 with base as (
-    select
+    select 
         host_id,
-        count(distinct id) as place_cnts
+        count(distinct id) as cnts
     from 
         places
     group by 
         host_id
-    having
+    having 
         count(distinct id) >= 2
 )
 select
-    b.id,
-    b.name,
+    a.id,
+    a.name,
     a.host_id
 from 
-    base a
-join 
-    places b
+    places a
+inner join 
+    base b 
 on 
     a.host_id = b.host_id
 order by 
-    b.id asc
+    a.id asc
