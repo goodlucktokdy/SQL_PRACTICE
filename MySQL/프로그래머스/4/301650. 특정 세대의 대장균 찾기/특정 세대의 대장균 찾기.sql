@@ -1,30 +1,29 @@
 with recursive cte as (
     select
-        1 as gen,
         id,
-        parent_id
+        parent_id,
+        1 as generation
     from
-        ecoli_data
-    where
+        ecoli_data 
+    where 
         parent_id is null
     union all
     select
-        cte.gen + 1,
         a.id,
-        a.parent_id
-    from 
+        a.parent_id,
+        b.generation + 1 
+    from
         ecoli_data a
-    join
-        cte
-    on
-        a.parent_id = cte.id
-        
-    )
+    inner join 
+        cte b 
+    on 
+        b.id = a.parent_id
+)
 select
-    distinct id
+    id
 from 
     cte
 where
-    gen = 3
+    generation = 3
 order by 
-    id
+    id asc
