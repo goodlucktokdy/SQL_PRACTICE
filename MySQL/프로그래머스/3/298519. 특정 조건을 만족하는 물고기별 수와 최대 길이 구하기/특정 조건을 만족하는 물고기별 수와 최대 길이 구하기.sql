@@ -1,12 +1,25 @@
-WITH CTE AS
-(SELECT ID,FISH_TYPE,
-CASE WHEN LENGTH IS NULL THEN 10
-    ELSE LENGTH END AS LENGTH
-    ,TIME
-FROM FISH_INFO)
-
-SELECT COUNT(ID) AS FISH_COUNT, MAX(LENGTH) AS MAX_LENGTH, FISH_TYPE
-FROM CTE
-GROUP BY FISH_TYPE
-HAVING AVG(LENGTH) >= 33
-ORDER BY FISH_TYPE
+with filtered_fish_type as (
+    select
+        fish_type,
+        avg(case when length is null then 10 else length end) as avg_length
+    from 
+        fish_info
+    group by 
+        fish_type
+    having 
+        avg_length >= 33
+)
+select
+    count(distinct b.id) as fish_count,
+    max(b.length) as max_length,
+    a.fish_type  
+from 
+    filtered_fish_type a
+inner join 
+    fish_info b
+on 
+    a.fish_type = b.fish_type
+group by 
+    a.fish_type
+order by
+    a.fish_type asc
