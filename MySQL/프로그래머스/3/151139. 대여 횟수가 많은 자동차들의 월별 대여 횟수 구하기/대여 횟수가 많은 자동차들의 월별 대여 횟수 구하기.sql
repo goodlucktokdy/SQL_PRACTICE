@@ -1,29 +1,29 @@
 with base as (
-    select
-        car_id,
-        count(distinct history_id) 
+    select 
+        count(distinct history_id) as cnts,
+        car_id
     from 
         car_rental_company_rental_history
-    where
-        date_format(start_date,'%Y-%m') between '2022-08' and '2022-10'
+    where 
+        start_date between '2022-08-01' and '2022-10-31'
     group by 
         car_id
     having 
-        count(distinct history_id) >= 5
+        cnts >= 5
 )
 select 
-    month(b.start_date) as month,
+    month(a.start_date) as month,
     a.car_id,
-    count(distinct b.history_id) as record
+    count(distinct a.history_id) as records
 from 
-    base a 
+    car_rental_company_rental_history a 
 inner join 
-    car_rental_company_rental_history b
+    base b
 on 
     a.car_id = b.car_id
 where 
-    date_format(b.start_date,'%Y-%m') between '2022-08' and '2022-10'
+    a.start_date between '2022-08-01' and '2022-10-31'
 group by 
-    month(b.start_date), a.car_id
+    month, a.car_id
 order by 
-    month asc, a.car_id desc
+    month asc, car_id desc
