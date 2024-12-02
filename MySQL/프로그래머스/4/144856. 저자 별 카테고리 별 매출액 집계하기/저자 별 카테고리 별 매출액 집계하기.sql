@@ -1,33 +1,29 @@
 with base as (
     select
-        a.book_id,
-        a.sales_date,
-        a.sales,
-        b.category,
-        b.author_id,
-        b.price,
-        c.author_name
+        a.category,
+        a.author_id,
+        sum(a.price * b.sales) as revenue
     from 
-        book_sales a
+        book a 
     left join 
-        book b
-    on 
+        book_sales b
+    on
         a.book_id = b.book_id
-    left join
-        author c
-    on 
-        b.author_id = c.author_id
-    where
-        a.sales_date between '2022-01-01' and '2022-01-31'
+    where 
+        date_format(b.sales_date,'%Y-%m') = '2022-01'
+    group by 
+        a.category, a.author_id
 )
-select
-    author_id,
-    author_name,
-    category,
-    sum(sales*price) as total_sales
+select 
+    a.author_id,
+    b.author_name,
+    a.category,
+    a.revenue
 from 
-    base
-group by 
-    author_id, author_name, category
+    base a 
+inner join 
+    author b
+on 
+    a.author_id = b.author_id
 order by 
-    author_id asc, category desc
+    a.author_id asc, a.category desc
