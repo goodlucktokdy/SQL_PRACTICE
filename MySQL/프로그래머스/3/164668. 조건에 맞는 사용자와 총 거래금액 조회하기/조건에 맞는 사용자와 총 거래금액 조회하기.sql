@@ -1,28 +1,26 @@
-with base as (
+with filtered_users as (
     select
-        distinct
-        a.writer_id,
-        b.nickname,
-        a.status,
-        a.price
+        writer_id,
+        sum(price) as total_sales
     from 
-        used_goods_board a
-    inner join
-        used_goods_user b
-    on 
-        a.writer_id = b.user_id 
-    where
-        a.status = 'DONE'
+        used_goods_board
+    where 
+        status = 'DONE'
+    group by 
+        writer_id
+    having 
+        total_sales >= 700000
 )
-select 
-    writer_id,
-    nickname,
-    sum(price) as total_sales
+select
+    distinct
+    b.user_id,
+    b.nickname,
+    a.total_sales
 from 
-    base
-group by 
-    writer_id, nickname
-having
-    sum(price) >= 700000
+    filtered_users a
+inner join 
+    used_goods_user b
+on 
+    a.writer_id = b.user_id
 order by 
-    sum(price) asc
+    a.total_sales asc
