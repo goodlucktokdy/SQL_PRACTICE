@@ -1,22 +1,23 @@
-with base as (
+with filtering_month as (
     select
-        a.history_id,
-        a.car_id,
-        a.start_date,
-        b.car_type
+        history_id,
+        car_id,
+        start_date
     from 
-        car_rental_company_rental_history a
-    left join 
-        car_rental_company_car b
-    on
-        a.car_id = b.car_id
+        car_rental_company_rental_history
     where 
-        month(a.start_date) = 10 and b.car_type = '세단'
+        month(start_date) = 10
 )
 select
     distinct
-    car_id
+    a.car_id
 from 
-    base
+    filtering_month a
+inner join 
+    car_rental_company_car b
+on 
+    a.car_id = b.car_id 
+where
+    b.car_type = '세단'
 order by 
-    car_id desc
+    a.car_id desc
