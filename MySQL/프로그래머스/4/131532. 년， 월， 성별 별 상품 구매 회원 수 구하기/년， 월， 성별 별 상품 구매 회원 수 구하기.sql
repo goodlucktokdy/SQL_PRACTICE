@@ -1,28 +1,27 @@
 with base as (
     select
-        a.user_id,
-        a.gender,
-        b.online_sale_id,
-        b.sales_date
-    from 
-        user_info a 
-    left join 
-        online_sale b
+        year(a.sales_date) as year,
+        month(a.sales_date) as month,
+        b.gender,
+        a.user_id
+    from  
+        online_sale a
+    right join
+        user_info b
     on 
         a.user_id = b.user_id
-    where 
-        b.online_sale_id is not null
 )
-select 
-    year(sales_date) as year,
-    month(sales_date) as month,
+select
+    year,
+    month,
     gender,
     count(distinct user_id) as users
 from 
-    base 
+    base
 where 
-    gender is not null
+    gender is not null and year is not null
 group by 
     year, month, gender
 order by 
-    year, month, gender
+    year asc, month asc, gender asc
+    
