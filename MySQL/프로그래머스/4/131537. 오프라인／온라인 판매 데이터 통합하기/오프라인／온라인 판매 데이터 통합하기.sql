@@ -1,29 +1,28 @@
 with base as (
     select 
-        user_id,
+        sales_date,
         product_id,
-        sales_amount,
-        sales_date
+        user_id,
+        sales_amount
     from 
         online_sale
-    union all 
+    union all
     select 
-        null as user_id,
+        sales_date,
         product_id,
-        sales_amount,
-        sales_date
+        null as user_id,
+        sales_amount
     from 
         offline_sale
 )
-select 
+select
     date_format(sales_date,'%Y-%m-%d') as sales_date,
     product_id,
     user_id,
     sales_amount
 from 
-    base
+    base 
 where 
-    sales_date between '2022-03-01' and '2022-03-31'
+    date_format(sales_date,'%Y-%m') = '2022-03'
 order by 
     sales_date asc, product_id asc, user_id asc
-    
