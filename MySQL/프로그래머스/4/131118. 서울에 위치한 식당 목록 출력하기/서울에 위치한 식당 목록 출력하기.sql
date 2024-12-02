@@ -1,40 +1,32 @@
-with base as (
-    select 
-        a.review_id,
+with filter_seoul as (
+    select
         a.rest_id,
-        a.review_score as score, 
-        b.rest_name,
-        b.food_type,
-        b.favorites,
-        b.address
+        a.rest_name,
+        a.food_type,
+        a.favorites,
+        a.address,
+        b.review_score
     from 
-        rest_review a
+        rest_info a
     left join 
-        rest_info b
+        rest_review b
     on 
         a.rest_id = b.rest_id
-    where
-        substring(b.address,1,5) like '%서울%'
+    where 
+        left(a.address,5) like '%서울%시%'
 )
-select 
-    a.rest_id,
-    a.rest_name,
-    a.food_type,
-    a.favorites,
-    a.address,
-    round(avg(a.score),2) as score
-from (
-    select 
-        rest_id,
-        rest_name,
-        food_type,
-        favorites,
-        address,
-        score
-    from 
-        base
-) a
+select
+    rest_id,
+    rest_name,
+    food_type,
+    favorites,
+    address,
+    round(avg(review_score),2) as score
+from 
+    filter_seoul
 group by 
-    1,2,3,4
+    1,2,3,4,5
+having 
+    score is not null
 order by 
     score desc, favorites desc
