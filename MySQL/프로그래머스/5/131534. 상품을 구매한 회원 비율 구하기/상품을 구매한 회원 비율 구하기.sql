@@ -1,41 +1,36 @@
-with base as (
+with users as (
     select 
-        a.sales_date,
-        a.user_id,
-        b.joined
-    from 
-        online_sale a 
-    left join 
-        user_info b 
-    on 
-        a.user_id = b.user_id 
-    where 
-        year(b.joined) = 2021
-)
-,total_users_joined_2021 as (
-    select
-        count(distinct user_id) as total_users
+        user_id,
+        gender,
+        age,
+        joined
     from 
         user_info
     where 
-        year(joined) = 2021)
-select 
-    a.year,
-    a.month,
-    a.purchased_users,
-    round(nullif(a.purchased_users/a.total_users,0),1) as purchased_ratio
-from (
+        year(joined) = 2021 
+)
+, sales_info as (
     select 
-        year(a.sales_date) as year,
-        month(a.sales_date) as month,
-        count(distinct a.user_id) as purchased_users,
-        b.total_users
+        a.user_id,
+        b.online_sale_id,
+        b.sales_date
     from 
-        base a
-    cross join 
-        total_users_joined_2021 b
-    group by 
-        year, month
-) a
-order by 
-    a.year asc, a.month asc
+        users a 
+    left join 
+        online_sale b
+    on 
+        a.user_id = b.user_id
+)
+select 
+    year(sales_date) as year,
+    month(sales_date) as month,
+    count(distinct user_id) as purchased_users,
+    round(coalesce(count(distinct user_id)/(select count(distinct user_id) from users),0),1) as purchased_ratio 
+from 
+    sales_info
+where 
+    sales_date is not null 
+group by 
+    year, month
+order by
+    year asc, month asc
