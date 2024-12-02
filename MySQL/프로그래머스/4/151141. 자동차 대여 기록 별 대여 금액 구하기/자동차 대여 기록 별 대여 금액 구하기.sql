@@ -1,55 +1,42 @@
 with base as (
     select
-        a.history_id,
         a.car_id,
-        a.start_date,
-        a.end_date,
-        timestampdiff(day,a.start_date,a.end_date) + 1 as duration,
-        b.car_type,
-        b.daily_fee
-    from 
-        CAR_RENTAL_COMPANY_RENTAL_HISTORY a 
-    left join 
-        CAR_RENTAL_COMPANY_CAR b 
-    on 
-        a.car_id = b.car_id
-)
-,joined_duration_cte as (
-    select 
-        a.history_id,
-        a.duration,
         a.car_type,
         a.daily_fee,
-        b.duration_type,
-        b.discount_rate
+        b.history_id,
+        b.start_date,
+        b.end_date,
+        c.duration_type,
+        c.discount_rate
     from 
-        base a 
-    left join 
-        car_rental_company_discount_plan b 
-    on 
-        a.car_type = b.car_type and 
-        b.duration_type = (case when duration >= 90 then '90일 이상'
-                          when duration >= 30 then '30일 이상'
-                          when duration >= 7 then '7일 이상'
-                          else null end)
-)
-, total_fee_cte as (
-    select 
-        history_id,
-        car_type,
-        duration,
-        duration_type,
-        daily_fee,   
-        case when duration_type is not null then duration * daily_fee * (1 - 0.01*discount_rate) else duration * daily_fee end as fee
-    from 
-        joined_duration_cte
+        car_rental_company_car a 
+    left join
+        car_rental_company_rental_history b 
+    on
+        a.car_id = b.car_id 
+    left join
+        car_rental_company_discount_plan c
+    on
+        a.car_type = c.car_type
+        and c.duration_type = case when timestampdiff(day,b.start_date,b.end_date) + 1 >= 90 then '90일 이상'
+        when timestampdiff(day,b.start_date,b.end_date) + 1 >= 30 then '30일 이상'
+        when timestampdiff(day,b.start_date,b.end_date) + 1 >= 7 then '7일 이상'
+        else null end
     where 
-        car_type = '트럭'
+        a.car_type = '트럭'
 )
 select 
-    history_id,
-    round(fee) as fee 
-from 
-    total_fee_cte
+    a.history_id,
+    case when a.duration_type is not null then round(a.daily_fee * a.duration * 0.01 * (100-a.discount_rate)) else a.daily_fee * a.duration end as fee
+from (
+        select 
+            history_id,
+            daily_fee,
+            timestampdiff(day,start_date,end_date) + 1 as duration,
+            duration_type,
+            discount_rate
+        from 
+            base
+) a
 order by 
     fee desc, history_id desc
