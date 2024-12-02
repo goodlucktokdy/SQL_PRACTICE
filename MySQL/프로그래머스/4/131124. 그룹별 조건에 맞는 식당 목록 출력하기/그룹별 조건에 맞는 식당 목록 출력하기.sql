@@ -1,43 +1,40 @@
 with base as (
     select 
-        distinct
-        a.review_id,
         a.member_id,
-        a.review_date,
-        a.review_text,
-        b.member_name
-    from 
-        rest_review a 
-    left join 
-        member_profile b
-    on 
-        a.member_id = b.member_id
-)
-, review_cnts_ranks as (
-    select
-        a.member_name,
-        a.review_text,
-        a.review_date,
-        dense_rank() over (order by a.review_cnt desc) as ranks
+        dense_rank() over (order by a.review_cnts desc) as ranks
     from (
-        select 
+        select
             member_id,
-            member_name,
-            review_text,
-            review_date,
-            count(review_id) over (partition by member_id) as review_cnt
+            count(distinct review_id) as review_cnts
         from 
-            base 
+            rest_review
+        group by 
+            member_id
     ) a
 )
+, review_ranks as (
+    select 
+        a.member_id,
+        a.review_text,
+        a.review_date
+    from 
+        rest_review a 
+    inner join 
+        base b 
+    on 
+        a.member_id = b.member_id
+    where 
+        b.ranks = 1
+)
 select 
-    distinct
-    member_name,
-    review_text,
-    date_format(review_date,'%Y-%m-%d') as review_date
+    a.member_name,
+    b.review_text,
+    date_format(b.review_date,'%Y-%m-%d') as review_date
 from 
-    review_cnts_ranks
-where
-    ranks = 1
+    member_profile a 
+inner join 
+    review_ranks b
+on 
+    a.member_id = b.member_id
 order by 
-    review_date asc, review_text asc
+    b.review_date asc, b.review_text asc
